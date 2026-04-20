@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://gfunbt17kyk1"]
+
+[ext_resource type="Script" uid="uid://de3gtyxupulk" path="res://scenes/ball.gd" id="1_cxlvu"]
+[ext_resource type="Texture2D" uid="uid://r4w7i36eccih" path="res://tex/ball.png" id="2_f7cbr"]
+[ext_resource type="AudioStream" uid="uid://clddygwa36c3t" path="res://score.mp3" id="3_f7cbr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_0tnpc"]
+radius = 13.038404
+
+[node name="Ball" type="RigidBody2D" unique_id=881325266]
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_cxlvu")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1385313798]
+texture_filter = 1
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_f7cbr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1917076151]
+shape = SubResource("CircleShape2D_0tnpc")
+
+[node name="Score" type="AudioStreamPlayer2D" parent="." unique_id=852942385]
+stream = ExtResource("3_f7cbr")
+volume_db = 12.0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

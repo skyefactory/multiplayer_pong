@@ -1,0 +1,173 @@
+[gd_scene format=3 uid="uid://b1j6pl2dv524g"]
+
+[ext_resource type="Script" uid="uid://7a23jraxsx22" path="res://scenes/game_manager.gd" id="1_p57ef"]
+[ext_resource type="Script" uid="uid://b5st0ugnp2hwu" path="res://scenes/player_spawner.gd" id="1_uwrxv"]
+[ext_resource type="PackedScene" uid="uid://gfunbt17kyk1" path="res://scenes/ball.tscn" id="2_gee14"]
+[ext_resource type="PackedScene" uid="uid://jgpymcdbraha" path="res://scenes/player.tscn" id="2_yqjtg"]
+[ext_resource type="Texture2D" uid="uid://dg35mxvwinan1" path="res://tex/player1.png" id="3_lbhrr"]
+[ext_resource type="Texture2D" uid="uid://dj4uvuwtypgor" path="res://tex/player2.png" id="4_iywne"]
+[ext_resource type="FontFile" uid="uid://853im0lvigcn" path="res://fonts/Bitcount_Grid_Double/BitcountGridDouble-VariableFont_CRSV,ELSH,ELXP,slnt,wght.ttf" id="5_iywne"]
+[ext_resource type="Script" uid="uid://bhk1mtrycsve" path="res://scenes/ui.gd" id="6_u5sy4"]
+[ext_resource type="AudioStream" uid="uid://cnbr2hptrlxx8" path="res://timer_beep.wav" id="9_0tnpc"]
+
+[sub_resource type="Gradient" id="Gradient_8cj0n"]
+offsets = PackedFloat32Array(0, 0.05076142, 0.5431472, 0.9492386, 1)
+colors = PackedColorArray(0.29996836, 0.5116055, 1, 1, 0.020305816, 0.064404525, 0.17591918, 1, 0, 0, 0, 1, 0.1273574, 0.1030511, 1.8049032e-08, 1, 0.8509804, 0.7294118, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_uwrxv"]
+gradient = SubResource("Gradient_8cj0n")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yqjtg"]
+size = Vector2(1920, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lnu2h"]
+size = Vector2(20, 1080)
+
+[node name="game" type="Node2D" unique_id=949507438]
+script = ExtResource("1_p57ef")
+ball_scene = ExtResource("2_gee14")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1792305146]
+z_index = -1
+position = Vector2(960, 544)
+scale = Vector2(30, 17)
+texture = SubResource("GradientTexture2D_uwrxv")
+
+[node name="PlayerSpawner" type="Node" parent="." unique_id=1283170026 node_paths=PackedStringArray("player1_spawn", "player2_spawn")]
+script = ExtResource("1_uwrxv")
+player_scene = ExtResource("2_yqjtg")
+player1_spawn = NodePath("../Player1Spawn")
+player2_spawn = NodePath("../Player2Spawn")
+player1_tex = ExtResource("3_lbhrr")
+player2_tex = ExtResource("4_iywne")
+
+[node name="UpperLimit" type="StaticBody2D" parent="." unique_id=83986034]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="UpperLimit" unique_id=883008194]
+position = Vector2(961, -9)
+shape = SubResource("RectangleShape2D_yqjtg")
+
+[node name="LowerLimit" type="StaticBody2D" parent="." unique_id=2063304624]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LowerLimit" unique_id=763259898]
+position = Vector2(961, 1088)
+shape = SubResource("RectangleShape2D_yqjtg")
+
+[node name="Player1Goal" type="Area2D" parent="." unique_id=237706824]
+position = Vector2(0, 1)
+
+[node name="LeftScore" type="CollisionShape2D" parent="Player1Goal" unique_id=1756493546]
+position = Vector2(-2, 540)
+shape = SubResource("RectangleShape2D_lnu2h")
+
+[node name="Player2Goal" type="Area2D" parent="." unique_id=318608340]
+position = Vector2(0, 1)
+
+[node name="RightScore" type="CollisionShape2D" parent="Player2Goal" unique_id=2146302474]
+position = Vector2(1920, 540)
+shape = SubResource("RectangleShape2D_lnu2h")
+
+[node name="Player1Spawn" type="Node2D" parent="." unique_id=1614540134]
+position = Vector2(170, 110)
+
+[node name="Player2Spawn" type="Node2D" parent="." unique_id=1134012439]
+position = Vector2(1750, 110)
+
+[node name="LeftSideParticles" type="CPUParticles2D" parent="." unique_id=1415943493]
+position = Vector2(33, 536)
+rotation = 1.5707964
+scale = Vector2(157.61177, 14.813279)
+amount = 25
+lifetime = 0.8
+emission_shape = 1
+emission_sphere_radius = 4.0
+gravity = Vector2(100, 0)
+scale_amount_min = 2.0
+scale_amount_max = 3.0
+color = Color(0.5306386, 0.67131853, 0.959675, 1)
+
+[node name="RightSidePartt" type="CPUParticles2D" parent="." unique_id=6677464]
+position = Vector2(1874.0001, 534)
+rotation = 1.5707964
+scale = Vector2(157.61177, 14.813279)
+amount = 25
+lifetime = 0.8
+lifetime_randomness = 1.0
+emission_shape = 1
+emission_sphere_radius = 4.0
+gravity = Vector2(-125, 0)
+scale_amount_min = 2.0
+scale_amount_max = 3.0
+color = Color(0.75798595, 0.6519587, 1.1551381e-06, 1)
+
+[node name="UI" type="Control" parent="." unique_id=1313846707]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("6_u5sy4")
+
+[node name="Divider" type="ColorRect" parent="UI" unique_id=2058529491]
+layout_mode = 0
+offset_left = 955.0
+offset_top = 3.0
+offset_right = 965.0
+offset_bottom = 1083.0
+color = Color(1, 0.5019608, 1, 0.18039216)
+
+[node name="Player1Score" type="Label" parent="UI" unique_id=2096633858]
+layout_mode = 0
+offset_left = 860.0
+offset_right = 900.0
+offset_bottom = 78.0
+theme_override_fonts/font = ExtResource("5_iywne")
+theme_override_font_sizes/font_size = 64
+text = "0"
+
+[node name="StartTimer" type="Label" parent="UI" unique_id=1529255077]
+layout_mode = 0
+offset_left = 930.0
+offset_top = 138.0
+offset_right = 1007.0
+offset_bottom = 293.0
+theme_override_fonts/font = ExtResource("5_iywne")
+theme_override_font_sizes/font_size = 128
+text = "3"
+
+[node name="Player1Name" type="Label" parent="UI" unique_id=1430650895]
+layout_mode = 0
+offset_left = 324.0
+offset_top = 1024.0
+offset_right = 708.0
+offset_bottom = 1102.0
+theme_override_fonts/font = ExtResource("5_iywne")
+theme_override_font_sizes/font_size = 48
+text = "PlayerName"
+
+[node name="Player2Name" type="Label" parent="UI" unique_id=1980472205]
+layout_mode = 0
+offset_left = 1260.0
+offset_top = 1024.0
+offset_right = 1644.0
+offset_bottom = 1102.0
+theme_override_fonts/font = ExtResource("5_iywne")
+theme_override_font_sizes/font_size = 48
+text = "PlayerName"
+
+[node name="Player2Score" type="Label" parent="UI" unique_id=501966606]
+layout_mode = 0
+offset_left = 1030.0
+offset_right = 1070.0
+offset_bottom = 78.0
+theme_override_fonts/font = ExtResource("5_iywne")
+theme_override_font_sizes/font_size = 64
+text = "0"
+
+[node name="BallSpawn" type="Node2D" parent="." unique_id=2095466922]
+position = Vector2(961, 493)
+
+[node name="Tick" type="AudioStreamPlayer" parent="." unique_id=1545376700]
+stream = ExtResource("9_0tnpc")
+
+[connection signal="body_entered" from="Player1Goal" to="." method="_on_player_1_goal_body_entered"]
+[connection signal="body_entered" from="Player2Goal" to="." method="_on_player_2_goal_body_entered"]
