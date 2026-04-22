@@ -26,13 +26,16 @@ class_name MainMenu extends Control
 @onready var host_name: LineEdit = $HostMenu/NameEntry
 @onready var submit_host_btn: Button = $HostMenu/SubmitHostBtn
 @onready var host_back_btn: Button = $HostMenu/BackBtn
-
+@onready var use_upnp_checkbox: CheckBox = $HostMenu/UseUPnPChk
 @onready var lobby: ColorRect = $Lobby
 @onready var player1_label: Label = $Lobby/Player1Lbl
 @onready var player2_label: Label = $Lobby/Player2Lbl
 @onready var lobby_start_btn: Button = $Lobby/StartGameBtn
 
+
 @export var game_scene: PackedScene
+
+@onready var status_label: Label = $StatusLbl
 
 var clients: int = 0
 
@@ -53,7 +56,12 @@ func _ready() -> void:
 	submit_host_btn.pressed.connect(_on_submit_host_pressed)
 	host_back_btn.pressed.connect(_on_host_back_pressed)
 	lobby_start_btn.pressed.connect(_on_lobby_start_pressed)
+	status_label.text = ""
+	bind_network_signals()
 	populate_stats()
+
+func _exit_tree() -> void:
+	unbind_network_signals()
 
 func _on_host_pressed():
 	Gamestate.current_state = Gamestate.State.MENU_HOST
@@ -102,7 +110,7 @@ func _on_submit_host_pressed():
 	var name = host_name.text.strip_edges()
 	if name == "":
 		return
-	var status = NetworkController.host(port, name)
+	var status = NetworkController.host(port, name, use_upnp_checkbox.is_pressed())
 	if status == OK:
 		Gamestate.current_state = Gamestate.State.LOBBY
 	else:
@@ -111,7 +119,8 @@ func _on_submit_host_pressed():
 		NetworkController.reset()
 
 func _process(delta: float) -> void:
-	clients = multiplayer.get_peers().size() + 1
+	if NetworkController.peer:
+		clients = multiplayer.get_peers().size() + 1
 	match Gamestate.current_state:
 		Gamestate.State.MENU_HOST:
 			stats_panel.visible = false
@@ -162,6 +171,9 @@ func _on_peer_disconnected(id: int) -> void:
 	print("Peer disconnected with id: %d" % [id])
 	clients -= 1
 
+func _on_upnp_status(success: bool, message: String, port: int) -> void:
+	status_label.text = "UPnP Status: " + message
+
 #connect all the signals from network.gd 
 func bind_network_signals() -> void:
 	if not NetworkController.server_disconnected.is_connected(_on_server_disconnected):
@@ -170,6 +182,8 @@ func bind_network_signals() -> void:
 		NetworkController.peer_connected.connect(_on_peer_connected)
 	if not NetworkController.peer_disconnected.is_connected(_on_peer_disconnected):
 		NetworkController.peer_disconnected.connect(_on_peer_disconnected)
+	if not NetworkController.upnp_status.is_connected(_on_upnp_status):
+		NetworkController.upnp_status.connect(_on_upnp_status)
 		
 #disconnect all the signals from network.gd
 func unbind_network_signals() -> void:
@@ -179,3 +193,5 @@ func unbind_network_signals() -> void:
 		NetworkController.peer_connected.disconnect(_on_peer_connected)
 	if NetworkController.peer_disconnected.is_connected(_on_peer_disconnected):
 		NetworkController.peer_disconnected.disconnect(_on_peer_disconnected)
+	if NetworkController.upnp_status.is_connected(_on_upnp_status):
+		NetworkController.upnp_status.disconnect(_on_upnp_status)

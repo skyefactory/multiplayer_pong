@@ -6,6 +6,32 @@ signal server_disconnected
 signal peer_connected(peer_id: int)
 signal peer_disconnected(peer_id: int)
 
+signal upnp_status(success: bool, message: String, port: int)
+var upnp = null
+var upnp_thread = null
+var hosting_port = 0
+
+func setup_upnp(port:int)->void:
+	upnp_status.emit.call_deferred(true, "Starting UPnP setup...", port)
+	upnp = UPNP.new()
+	var err = upnp.discover()
+	if err != OK:
+		push_error("UPnP discovery failed: %s" % [err])
+		upnp_status.emit.call_deferred(false, "UPnP discovery failed: %s" % [err], port)
+		return
+	
+	if upnp.get_gateway() and upnp.get_gateway().is_valid_gateway():
+		upnp.add_port_mapping(port, port, ProjectSettings.get_setting("application/config/name"), "UDP")
+		upnp.add_port_mapping(port, port, ProjectSettings.get_setting("application/config/name"), "TCP")
+		upnp_status.emit.call_deferred(true, "UPnP setup successful", port)
+		print("UPnP port mapping successful on port %d" % [port])
+		return
+	else:
+		push_error("No valid UPnP gateway found")
+		upnp_status.emit.call_deferred(false, "No valid UPnP gateway found", port)
+		return
+	return
+
 const MAX_PEERS: int = 2 # max number of clients that can connect to the server (including the host)
 
 var is_singleplayer: bool = false # is this a singleplayer session?
@@ -34,6 +60,8 @@ func reset() -> void:
 	is_server = false
 	reject_new_clients = false
 	multiplayer.multiplayer_peer = null
+	if upnp:
+		upnp.delete_port_mappings(hosting_port)
 
 # forcibly disconnect a client from the server. Only the server can call this function.
 func disconnect_client(peer_id: int, force: bool = true) -> void:
@@ -71,7 +99,10 @@ func _bind_multiplayer_signals() -> void:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
 #called when the player chooses host from the menu.
-func host(port: int, plr_name: String) -> int:
+func host(port: int, plr_name: String, do_upnp: bool = false) -> int:
+	if do_upnp:
+		upnp_thread = Thread.new()
+		upnp_thread.start(setup_upnp.bind(port))
 	_bind_multiplayer_signals()
 	is_server = true # this is the server instance
 	peer = ENetMultiplayerPeer.new() #setup peer
@@ -84,6 +115,7 @@ func host(port: int, plr_name: String) -> int:
 	var err_code = peer.create_server(port)
 	if err_code == OK:
 		multiplayer.multiplayer_peer = peer
+		hosting_port = port
 		print("Server listening on port %d" % [port])
 	else:
 		print("Failed to create server: %s" % [err_code])

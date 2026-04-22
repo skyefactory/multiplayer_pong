@@ -358,7 +358,7 @@ text = "Start"
 
 [node name="StatusLbl" type="Label" parent="." unique_id=1259495594]
 layout_mode = 0
-offset_left = 307.0
-offset_top = 279.0
-offset_right = 347.0
-offset_bottom = 302.0
+offset_left = 911.0
+offset_top = 778.0
+offset_right = 951.0
+offset_bottom = 801.0
