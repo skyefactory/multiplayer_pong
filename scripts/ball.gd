@@ -1,6 +1,7 @@
 extends RigidBody2D
 
 @export var ball_speed: float = 500.0
+@export var max_ball_speed: float = 2200.0
 @export var paddle_max_bounce_angle: float = 60.0
 @export var min_wall_vertical_component: float = 0.2
 
@@ -10,6 +11,8 @@ func _ready() -> void:
 	linear_damp = 0.0
 	angular_damp = 0.0
 	can_sleep = false
+	set("continuous_cd", 2)
+	max_contacts_reported = 4
 	if not NetworkController.is_server:
 		freeze = true
 		contact_monitor = false
@@ -22,8 +25,8 @@ func _on_body_entered(body: Node) -> void:
 		print("Ball collided with player: %s" % [body.player_name])
 		var hit_ratio = get_hit_ratio_player(body, global_position)
 		var away_x_dir = get_away_x_dir_from_player(body)
+		ball_speed = min(ball_speed * 1.05, max_ball_speed)
 		linear_velocity = angle_from_hit_player(ball_speed, hit_ratio, away_x_dir, paddle_max_bounce_angle)
-		ball_speed *= 1.05 # increase speed by 5% on each hit
 		body.find_child("HitSound").play()
 	elif body.name == "UpperLimit":
 		print("Ball collided with upper limit")
@@ -78,4 +81,7 @@ func shape_half_height(shape: Shape2D) -> float:
 func _physics_process(delta: float) -> void:
 	if not NetworkController.is_server:
 		return
+	if linear_velocity.length() > max_ball_speed:
+		linear_velocity = linear_velocity.normalized() * max_ball_speed
+		ball_speed = max_ball_speed
 	NetworkController.sync_ball_info(global_position, linear_velocity, rotation, ball_speed)

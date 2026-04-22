@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://gfunbt17kyk1"]
 
-[ext_resource type="Script" uid="uid://de3gtyxupulk" path="res://scenes/ball.gd" id="1_cxlvu"]
+[ext_resource type="Script" uid="uid://de3gtyxupulk" path="res://scripts/ball.gd" id="1_cxlvu"]
 [ext_resource type="Texture2D" uid="uid://r4w7i36eccih" path="res://tex/ball.png" id="2_f7cbr"]
-[ext_resource type="AudioStream" uid="uid://clddygwa36c3t" path="res://score.mp3" id="3_f7cbr"]
+[ext_resource type="AudioStream" uid="uid://clddygwa36c3t" path="res://sfx/score.mp3" id="3_f7cbr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0tnpc"]
 radius = 13.038404

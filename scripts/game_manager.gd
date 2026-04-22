@@ -1,6 +1,6 @@
 extends Node2D
 
-const SCORE_SFX: AudioStream = preload("res://score.mp3")
+const SCORE_SFX: AudioStream = preload("res://sfx/score.mp3")
 
 var player1_score: int = 0
 var player2_score: int = 0
@@ -22,6 +22,28 @@ func _ready() -> void:
 		sync_scores.rpc(player1_score, player2_score)
 		sync_round_state.rpc(start_time, game_started)
 	find_child("Tick").play()
+	if NetworkController.is_server:
+			NetworkController.peer_disconnected.connect(_on_peer_disconnected)
+	else:
+		NetworkController.server_disconnected.connect(_on_server_disconnected)
+
+func _on_peer_disconnected(id: int) -> void:
+	print("Peer disconnected with id: %d" % [id])
+	NetworkController.reset()
+	Gamestate.current_state = Gamestate.State.MAIN_MENU
+	get_tree().change_scene_to_file("res://scenes/startmenu.tscn")
+
+func _on_server_disconnected() -> void:
+	print("Disconnected from server.")
+	NetworkController.reset()
+	Gamestate.current_state = Gamestate.State.MAIN_MENU
+	get_tree().change_scene_to_file("res://scenes/startmenu.tscn")	
+
+func _exit_tree() -> void:
+	if NetworkController.is_server:
+		NetworkController.peer_disconnected.disconnect(_on_peer_disconnected)
+	else:
+		NetworkController.server_disconnected.disconnect(_on_server_disconnected)
 
 func _process(delta: float) -> void:
 	players = find_children("*", "Player", true, false)
